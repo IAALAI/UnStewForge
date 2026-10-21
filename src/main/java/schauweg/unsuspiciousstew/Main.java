@@ -1,14 +1,8 @@
 package schauweg.unsuspiciousstew;
 
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+import net.minecraftforge.fml.common.Mod;
 
-@Environment(EnvType.CLIENT)
-public class Main implements ClientModInitializer {
-
-    @Override
-    public void onInitializeClient() {
-
-    }
+@Mod(Main.MOD_ID)
+public final class Main {
+    public static final String MOD_ID = "unsuspiciousstew";
 }

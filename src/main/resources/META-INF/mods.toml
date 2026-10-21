@@ -1,0 +1,29 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="MIT"
+
+[[mods]]
+modId="unsuspiciousstew"
+version="${version}"
+displayName="Unsuspicious Stew"
+logoFile="assets/unsuspicious-stew/icon.png"
+authors="Schauweg"
+displayTest="IGNORE_ALL_VERSION"
+description='''
+Displays suspicious stew effects and durations in item tooltips and above the hotbar.
+Client-side port for Minecraft 1.20.1 and NeoForge 47.1.105.
+'''
+
+[[dependencies.unsuspiciousstew]]
+modId="forge"
+mandatory=true
+versionRange="[47.1.105,48)"
+ordering="NONE"
+side="CLIENT"
+
+[[dependencies.unsuspiciousstew]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.20.1]"
+ordering="NONE"
+side="CLIENT"
