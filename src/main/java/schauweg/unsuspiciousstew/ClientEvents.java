@@ -1,19 +1,19 @@
 package schauweg.unsuspiciousstew;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
-import net.minecraftforge.client.gui.overlay.ForgeGui;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.event.entity.player.ItemTooltipEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 
 import java.util.List;
 
-@Mod.EventBusSubscriber(modid = Main.MOD_ID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = Main.MOD_ID, value = Dist.CLIENT)
 public final class ClientEvents {
     private ClientEvents() {
     }
@@ -22,27 +22,29 @@ public final class ClientEvents {
     public static void onItemTooltip(ItemTooltipEvent event) {
         // Vanilla already lists these effects in creative-mode tooltips.
         if (!event.getFlags().isCreative()) {
-            event.getToolTip().addAll(StewInfo.getEffectLines(event.getItemStack()));
+            event.getToolTip().addAll(StewInfo.getEffectLines(
+                    event.getItemStack(), event.getContext().tickRate()));
         }
     }
 
     @SubscribeEvent
-    public static void onSelectedItemName(RenderGuiOverlayEvent.Post event) {
-        if (!event.getOverlay().id().equals(VanillaGuiOverlay.ITEM_NAME.id())) {
+    public static void onSelectedItemName(RenderGuiLayerEvent.Post event) {
+        if (!event.getName().equals(VanillaGuiLayers.SELECTED_ITEM_NAME)) {
             return;
         }
 
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.player == null || minecraft.gameMode == null
+        if (minecraft.player == null || minecraft.level == null || minecraft.gameMode == null
                 || minecraft.options.hideGui || minecraft.player.isSpectator()) {
             return;
         }
 
-        ForgeGui gui = (ForgeGui) minecraft.gui;
+        Gui gui = minecraft.gui;
         if (gui.toolHighlightTimer <= 0) {
             return;
         }
-        List<Component> lines = StewInfo.getEffectLines(gui.lastToolHighlight);
+        List<Component> lines = StewInfo.getEffectLines(gui.lastToolHighlight,
+                minecraft.level.tickRateManager().tickrate());
         if (lines.isEmpty()) {
             return;
         }
@@ -52,18 +54,18 @@ public final class ClientEvents {
         if (alpha <= 3) {
             return;
         }
-        int y = event.getWindow().getGuiScaledHeight()
+        GuiGraphics graphics = event.getGuiGraphics();
+        int y = graphics.guiHeight()
                 - Math.max(Math.max(gui.leftHeight, gui.rightHeight), 59);
         if (!minecraft.gameMode.canHurtPlayer()) {
             y += 14;
         }
 
-        GuiGraphics graphics = event.getGuiGraphics();
         int lineHeight = minecraft.font.lineHeight + 5;
         for (Component line : lines) {
             y -= lineHeight;
             int width = minecraft.font.width(line);
-            int x = (event.getWindow().getGuiScaledWidth() - width) / 2;
+            int x = (graphics.guiWidth() - width) / 2;
             graphics.drawString(minecraft.font, line, x, y, (alpha << 24) | 0xCCCCCC);
         }
     }

@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'net.neoforged.gradle' version '6.0.21'
+    id 'net.neoforged.moddev' version '2.0.148'
 }
 
 version = mod_version
@@ -11,24 +11,31 @@ base {
 }
 
 java {
-    toolchain.languageVersion = JavaLanguageVersion.of(17)
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
     withSourcesJar()
 }
 
-minecraft {
-    mappings channel: 'official', version: minecraft_version
-    accessTransformer file('src/main/resources/META-INF/accesstransformer.cfg')
+neoForge {
+    version = neoforge_version
+    validateAccessTransformers = true
 
     runs {
         client {
-            workingDirectory project.file('run')
-            property 'forge.logging.console.level', 'info'
-            mods {
-                unsuspiciousstew {
-                    source sourceSets.main
-                }
-            }
+            client()
+            gameDirectory = project.file('run')
+            systemProperty 'forge.logging.console.level', 'info'
         }
+    }
+
+    mods {
+        unsuspiciousstew {
+            sourceSet sourceSets.main
+        }
+    }
+
+    unitTest {
+        enable()
+        testedMod = mods.unsuspiciousstew
     }
 }
 
@@ -38,20 +45,28 @@ repositories {
 }
 
 dependencies {
-    minecraft "net.neoforged:forge:${minecraft_version}-${neoforge_version}"
-    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test', Test).configure {
+    useJUnitPlatform()
 }
 
 tasks.named('processResources', ProcessResources).configure {
     inputs.property 'version', project.version
-    filesMatching('META-INF/mods.toml') {
-        expand version: project.version
+    inputs.property 'minecraft_version', minecraft_version
+    inputs.property 'neoforge_version', neoforge_version
+    filesMatching('META-INF/neoforge.mods.toml') {
+        expand version: project.version,
+                minecraft_version: minecraft_version,
+                neoforge_version: neoforge_version
     }
 }
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
-    options.release = 17
+    options.release = 21
 }
 
 tasks.withType(AbstractArchiveTask).configureEach {
@@ -62,5 +77,4 @@ tasks.withType(AbstractArchiveTask).configureEach {
 tasks.named('jar', Jar).configure {
     from('LICENSE')
     manifest.attributes('Implementation-Version': project.version)
-    finalizedBy 'reobfJar'
 }

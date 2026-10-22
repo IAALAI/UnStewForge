@@ -1,8 +1,9 @@
 package schauweg.unsuspiciousstew;
 
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.common.Mod;
 
-@Mod(Main.MOD_ID)
+@Mod(value = Main.MOD_ID, dist = Dist.CLIENT)
 public final class Main {
     public static final String MOD_ID = "unsuspiciousstew";
 }
